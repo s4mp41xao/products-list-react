@@ -18,6 +18,8 @@ function App() {
   const [products, setProducts] = useState<ProductsProps[]>([])
   const productRef = useRef<HTMLInputElement | null>(null)
   const coloreRef = useRef<HTMLInputElement | null>(null)
+  const capacityRef = useRef<HTMLInputElement | null>(null)
+  const priceRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     loadProducts()
@@ -31,17 +33,31 @@ function App() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
 
-    if (!productRef.current?.value || !coloreRef.current?.value) return
+    if (
+      !productRef.current?.value ||
+      !coloreRef.current?.value ||
+      !capacityRef.current?.value ||
+      !priceRef.current?.value
+    )
+      return
 
     const response = await api.post('/objects', {
       name: productRef.current?.value,
       data: {
-        color: coloreRef.current?.value
+        color: coloreRef.current?.value,
+        capacity: capacityRef.current?.value,
+        price: priceRef.current?.value
       }
     })
 
     // return all products and include new product from submit
     setProducts(allProducts => [...allProducts, response.data])
+
+    // Limpar os campos do formulário
+    if (productRef.current) productRef.current.value = ''
+    if (coloreRef.current) coloreRef.current.value = ''
+    if (capacityRef.current) capacityRef.current.value = ''
+    if (priceRef.current) priceRef.current.value = ''
   }
 
   async function handleDelete(id: string) {
@@ -59,7 +75,9 @@ function App() {
     <>
       <div className="w-full min-h-screen bg-neutral-900 flex justify-center px-4">
         <main className="my-10 w-full md:max-w-2xl">
-          <h1 className="text-4xl font-medium text-white">Produto</h1>
+          <h1 className="text-4xl font-medium text-white">
+            Cadastro de Produtos
+          </h1>
 
           <form className="flex flex-col my-6" onSubmit={handleSubmit}>
             <label className="font-medium text-white">Nome:</label>
@@ -69,12 +87,26 @@ function App() {
               placeholder="Nome do produto"
               ref={productRef}
             />
+            <label className="font-medium text-white">Capacidade:</label>
+            <input
+              className="w-full mb-5 p-2 rounded bg-white"
+              type="text"
+              placeholder="Capacidade do produto"
+              ref={capacityRef}
+            />
             <label className="font-medium text-white">Cor:</label>
             <input
               className="w-full mb-5 p-2 rounded bg-white"
               type="text"
               placeholder="Cor do produto"
               ref={coloreRef}
+            />
+            <label className="font-medium text-white">Preço:</label>
+            <input
+              className="w-full mb-5 p-2 rounded bg-white"
+              type="number"
+              placeholder="Preço do produto"
+              ref={priceRef}
             />
 
             <input
@@ -85,6 +117,9 @@ function App() {
           </form>
 
           <section className="flex flex-col gap-4">
+            <h2 className="text-4xl font-medium text-white">
+              Produtos Cadastrados
+            </h2>
             {products.map(product => (
               <article
                 key={product.id}
@@ -95,23 +130,23 @@ function App() {
                   {product.name}
                 </p>
                 <p>
+                  <span className="font-medium">Capacidade: </span>
+                  {product.data?.capacity}
+                </p>
+                <p>
                   <span className="font-medium">Cor:</span>{' '}
                   {product.data?.color}
                 </p>
                 <p>
-                  <span className="font-medium">Capacidade:</span>
-                  {product.data?.capacity}
-                </p>
-                <p>
-                  <span className="font-medium">Preço:</span>
+                  <span className="font-medium">Preço: </span>
                   {product.data?.price}
                 </p>
 
                 <button
-                  className="bg-neutral-800 w-7 h-7 flex items-center justify-center rounded-lg absolute right-0 -top-2"
+                  className="bg-red-700 w-8 h-full flex items-center justify-center absolute right-0 top-1/2 -translate-y-1/2"
                   onClick={() => handleDelete(product.id)}
                 >
-                  <FiTrash size={18} color="red" />
+                  <FiTrash size={18} color="white" />
                 </button>
               </article>
             ))}
