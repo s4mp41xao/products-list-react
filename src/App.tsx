@@ -38,20 +38,26 @@ function App() {
       !coloreRef.current?.value ||
       !capacityRef.current?.value ||
       !priceRef.current?.value
-    )
+    ) {
+      alert('Por favor, preencha todos os campos.')
       return
+    }
 
-    const response = await api.post('/objects', {
-      name: productRef.current?.value,
-      data: {
-        color: coloreRef.current?.value,
-        capacity: capacityRef.current?.value,
-        price: priceRef.current?.value
-      }
-    })
+    try {
+      const response = await api.post('/objects', {
+        name: productRef.current?.value,
+        data: {
+          color: coloreRef.current?.value,
+          capacity: capacityRef.current?.value,
+          price: priceRef.current?.value
+        }
+      })
 
-    // return all products and include new product from submit
-    setProducts(allProducts => [...allProducts, response.data])
+      // return all products and include new product from submit
+      setProducts(allProducts => [...allProducts, response.data])
+    } catch (err) {
+      console.log(err)
+    }
 
     // Limpar os campos do formulário
     if (productRef.current) productRef.current.value = ''
