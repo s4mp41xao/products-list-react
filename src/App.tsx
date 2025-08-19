@@ -9,17 +9,13 @@ import {
 import { FiTrash } from 'react-icons/fi'
 import { api } from './services/api'
 
-interface ProductsData {
+interface ProductsProps {
+  id: string
+  productName: string
   color: string
   memory: string
   price: number
   storage: string
-}
-
-interface ProductsProps {
-  id: string
-  name: string
-  data: ProductsData | null
 }
 
 export function App() {
@@ -28,7 +24,7 @@ export function App() {
   const productRef = useRef<HTMLInputElement | null>(null)
   const storageRef = useRef<HTMLInputElement | null>(null)
   const memoryRef = useRef<HTMLInputElement | null>(null)
-  const coloreRef = useRef<HTMLInputElement | null>(null)
+  const colorRef = useRef<HTMLInputElement | null>(null)
   const priceRef = useRef<HTMLInputElement | null>(null)
 
   const totalProducts = useMemo(() => {
@@ -36,17 +32,13 @@ export function App() {
   }, [products])
 
   useEffect(() => {
-    const storage = localStorage.getItem('products')
-    if (storage) {
-      setProducts(JSON.parse(storage))
+    async function loadProducts() {
+      const response = await api.get<ProductsProps[]>('/products')
+      setProducts(response.data)
     }
+
+    loadProducts()
   }, [])
-
-  useEffect(() => {
-    if (products.length == 0) return
-
-    localStorage.setItem('products', JSON.stringify(products))
-  }, [products])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -55,7 +47,7 @@ export function App() {
       !productRef.current?.value ||
       !storageRef.current?.value ||
       !memoryRef.current?.value ||
-      !coloreRef.current?.value ||
+      !colorRef.current?.value ||
       !priceRef.current?.value
     ) {
       alert('Por favor, preencha todos os campos.')
@@ -63,14 +55,12 @@ export function App() {
     }
 
     try {
-      const response = await api.post('/objects', {
-        name: productRef.current?.value,
-        data: {
-          color: coloreRef.current?.value,
-          memory: memoryRef.current?.value,
-          price: Number(priceRef.current?.value),
-          storage: storageRef.current?.value
-        }
+      const response = await api.post<ProductsProps>('/products', {
+        productName: productRef.current?.value,
+        color: colorRef.current?.value,
+        memory: memoryRef.current?.value,
+        price: Number(priceRef.current?.value),
+        storage: storageRef.current?.value
       })
 
       // return all products and include new product from submit
@@ -81,25 +71,23 @@ export function App() {
 
     // Limpar os campos do formulário
     if (productRef.current) productRef.current.value = ''
-    if (coloreRef.current) coloreRef.current.value = ''
+    if (colorRef.current) colorRef.current.value = ''
     if (memoryRef.current) memoryRef.current.value = ''
     if (storageRef.current) storageRef.current.value = ''
     if (priceRef.current) priceRef.current.value = ''
   }
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      try {
-        await api.delete(`/objects/${id}`)
+  const handleDelete = useCallback(async (id: string) => {
+    try {
+      await api.delete(`/products/${id}`)
 
-        const allProducts = products.filter(product => product.id !== id)
-        setProducts(allProducts)
-      } catch (err) {
-        console.log(err)
-      }
-    },
-    [products]
-  )
+      setProducts(allProducts =>
+        allProducts.filter(product => product.id !== id)
+      )
+    } catch (err) {
+      console.log(err)
+    }
+  }, [])
 
   return (
     <>
@@ -137,7 +125,7 @@ export function App() {
               className="w-full mb-5 p-2 rounded bg-white"
               type="text"
               placeholder="Ex: Midnight"
-              ref={coloreRef}
+              ref={colorRef}
             />
             <label className="font-medium text-white">Preço:</label>
             <input
@@ -168,23 +156,23 @@ export function App() {
               >
                 <p>
                   <span className="font-medium">Nome: </span>
-                  {product.name}
+                  {product.productName}
                 </p>
                 <p>
                   <span className="font-medium">Memória: </span>
-                  {product.data?.memory}
+                  {product.memory}
                 </p>
                 <p>
                   <span className="font-medium">Armazenamento: </span>
-                  {product.data?.storage}
+                  {product.storage}
                 </p>
                 <p>
                   <span className="font-medium">Cor: </span>
-                  {product.data?.color}
+                  {product.color}
                 </p>
                 <p>
                   <span className="font-medium">Preço: </span>
-                  {product.data?.price}
+                  {product.price}
                 </p>
 
                 <button
