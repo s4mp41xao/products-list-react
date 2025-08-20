@@ -4,7 +4,7 @@ This is the frontend for a modern Product Management application, built with **R
 
 The application is designed to consume a separate backend API built with NestJS.
 
-**Live Demo URL**: [https://products-list-react-inky.vercel.app/](https://products-list-react-inky.vercel.app/)
+**Live Demo URL**: <a href="https://products-list-react-inky.vercel.app/" target="_blank" rel="noopener noreferrer">https://products-list-react-inky.vercel.app/</a>
 
 ---
 
